@@ -9,25 +9,38 @@ authentication_blueprint = Blueprint('authentication_blueprint', __name__)
 
 @authentication_blueprint.route('/auth/sign-up', methods=['POST'])
 def sign_up():
+    connection = None
     try:
-        new_user_data = request.get_json()
+        new_user_data = request.get_json() or {}
+        username = new_user_data.get("username")
+        password = new_user_data.get("password")
+
+        if not isinstance(username, str) or not username.strip():
+            return jsonify({"err": "username is required"}), 400
+        if not isinstance(password, str) or not password:
+            return jsonify({"err": "password is required"}), 400
+
+        username = username.strip()
+
         connection = get_db_connection()
         cursor = connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cursor.execute("SELECT * FROM users WHERE username = %s;", (new_user_data["username"],))
+        cursor.execute("SELECT * FROM users WHERE username = %s;", (username,))
         existing_user = cursor.fetchone()
         if existing_user:
             cursor.close()
             return jsonify({"err": "Username already taken"}), 400
-        hashed_password = bcrypt.hashpw(bytes(new_user_data["password"], 'utf-8'), bcrypt.gensalt())
-        cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s) RETURNING id, username", (new_user_data["username"], hashed_password.decode('utf-8')))
+        hashed_password = bcrypt.hashpw(bytes(password, 'utf-8'), bcrypt.gensalt())
+        cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s) RETURNING id, username", (username, hashed_password.decode('utf-8')))
         created_user = cursor.fetchone()
         connection.commit()
-        connection.close()
         payload = {"username": created_user["username"], "id": created_user["id"]}
         token = jwt.encode({ "payload": payload }, os.getenv('JWT_SECRET'))
         return jsonify({"token": token}), 201
     except Exception as err:
-        return jsonify({"err": str(err)}), 401
+        return jsonify({"err": str(err)}), 500
+    finally:
+        if connection:
+            connection.close()
 
 @authentication_blueprint.route('/auth/sign-in', methods=["POST"])
 def sign_in():
