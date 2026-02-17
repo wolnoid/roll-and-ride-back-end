@@ -31,6 +31,7 @@ def sign_up():
 
 @authentication_blueprint.route('/auth/sign-in', methods=["POST"])
 def sign_in():
+    connection = None
     try:
         sign_in_form_data = request.get_json()
         connection = get_db_connection()
@@ -46,6 +47,6 @@ def sign_in():
         token = jwt.encode({ "payload": payload }, os.getenv('JWT_SECRET'))
         return jsonify({"token": token}), 201
     except Exception as err:
-        return jsonify({"err": err.message}), 500
+        return jsonify({"err": str(err)}), 500
     finally:
-        connection.close()
+        if connection: connection.close()

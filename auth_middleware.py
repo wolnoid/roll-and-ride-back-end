@@ -6,6 +6,12 @@ import os
 def token_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # Allow CORS preflight requests through without auth.
+        # Some Flask setups route OPTIONS to the wrapped view, which would
+        # otherwise return 401 and fail the browser preflight.
+        if request.method == "OPTIONS":
+            return ("", 200)
+
         auth = request.headers.get("Authorization")
         if not auth:
             return jsonify({"error": "Unauthorized"}), 401

@@ -2,8 +2,7 @@ from flask import Flask
 from dotenv import load_dotenv
 from flask_cors import CORS
 from auth_blueprint import authentication_blueprint
-from hoots_blueprint import hoots_blueprint
-from comments_blueprint import comments_blueprint
+from saved_directions_blueprint import saved_directions_blueprint
 
 load_dotenv()
 
@@ -17,7 +16,6 @@ CORS(
 )
 
 app.register_blueprint(authentication_blueprint)
-app.register_blueprint(hoots_blueprint)
-app.register_blueprint(comments_blueprint)
+app.register_blueprint(saved_directions_blueprint)
 
 app.run()
