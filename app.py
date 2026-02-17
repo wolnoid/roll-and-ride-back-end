@@ -18,4 +18,5 @@ CORS(
 app.register_blueprint(authentication_blueprint)
 app.register_blueprint(saved_directions_blueprint)
 
-app.run()
+if __name__ == '__main__':
+    app.run()
