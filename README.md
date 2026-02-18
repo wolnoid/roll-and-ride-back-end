@@ -1,45 +1,79 @@
-# Flask JWT Auth Template
+# Roll & Ride API
 
-https://roll-and-ride-7a172a20dd22.herokuapp.com/
+This repository contains the **Flask + Postgres** back end for **Roll & Ride** (JWT auth + saved directions).
 
-## About
+For the full product overview, UI, and usage details, see the front-end repository:
+https://github.com/wolnoid/roll-and-ride-front-end
 
-This repo is a Flask JWT Auth template meant to be paired with a front-end app utilizing JWT authentication. It includes a basic user model, routes for user registration and login, and a JWT token generator.
+### Deployed API
+- https://roll-and-ride-7a172a20dd22.herokuapp.com/
 
-## Getting started
+---
 
-Fork and clone this repository to your local machine.
+## ✅ What this API provides
+- **JWT authentication**
+  - `POST /auth/sign-up`
+  - `POST /auth/sign-in`
+- **Saved directions (JWT required)**
+  - `GET /saved-directions`
+  - `POST /saved-directions`
+  - `PUT /saved-directions/:id`
+  - `DELETE /saved-directions/:id`
 
-After moving into the cloned directory, activate a new virtual environment:
+> Note: The front end stores “saved directions” as the **raw URL querystring** (e.g. `?v=1&o=...&d=...&mode=...&when=now&via=...`) so opening a bookmark can rerun routing with up-to-date times.
 
+---
+
+## 💻 Run locally
+
+### 1) Setup environment
+1. Fork and clone this repository.
+2. Install dependencies:
+   ```bash
+   pipenv install
+   ```
+3. Create a `.env` file in the project root. Minimum required:
+   ```bash
+   JWT_SECRET=your_secret_here
+   ```
+
+### 2) Configure Postgres
+You can use **either** a single `DATABASE_URL` **or** discrete Postgres variables.
+
+**Option A: DATABASE_URL**
 ```bash
-pipenv shell
+DATABASE_URL=postgres://user:pass@host:5432/dbname
 ```
 
-Install the dependencies:
-
+**Option B: discrete Postgres env vars**
 ```bash
-pyenv sync
+POSTGRES_HOST=localhost
+POSTGRES_DATABASE=roll_and_ride
+POSTGRES_USERNAME=postgres
+POSTGRES_PASSWORD=your_password
 ```
 
-Run the Flask app:
-
+Create tables:
 ```bash
-python app.py
+psql -f schema.sql
 ```
 
-## Database schema
-
-This backend expects Postgres tables for `users` (auth) and `saved_directions`.
-
-You can create them with:
-
+### 3) Start the server
 ```bash
-psql <your_db_name> -f schema.sql
+pipenv run python app.py
 ```
 
-To deactivate the virtual environment when you're done, run:
+---
 
-```bash
-exit
-```
+## 🧩 Technologies used
+- **Python 3**
+- **Flask**
+- **PostgreSQL** (psycopg2)
+- **PyJWT** + **bcrypt**
+- **Gunicorn** (deployment)
+- **flask-cors** (CORS)
+
+---
+
+## 📌 CORS
+CORS is configured to allow local dev origins (Vite) and the deployed Netlify domain. If you deploy to a different front-end domain, update the allowed origins in `app.py`.
